@@ -47,16 +47,19 @@ function App() {
     peers[id] = peer
   }
 
-  async function getStream() {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+  function addLocalStream(stream) {
     setStreams(prevStreams => [...prevStreams, stream])
     Object.values(peers).forEach(peer => peer.addStream(stream))
   }
 
+  async function getStream() {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+    addLocalStream(stream)
+  }
+
   async function activateScreenshare() {
     const stream = await navigator.mediaDevices.getDisplayMedia()
-    setStreams(prevStreams => [...prevStreams, stream])
-    Object.values(peers).forEach(peer => peer.addStream(stream))
+    addLocalStream(stream)
   }
   
   // component mount effect
