@@ -7,7 +7,7 @@ const socket = io('http://localhost:8000')
 
 function App() {
   const [ streams, setStreams ]             = useState([])
-  const [ remoteStreams, setRemoteStreams ] = useState([])
+  const [ remoteStreams, setRemoteStreams ] = useState({})
   const streamsRef                          = useRef()
   const remoteStreamsRef                    = useRef()
   const { current: peers }                  = useRef({})
@@ -23,12 +23,27 @@ function App() {
       trickle: false,
       streams: streamsRef.current
     })
+
     peer.on('signal', data => {
       socket.emit('signal', { to: id, data })
     })
+
     peer.on('stream', stream => {
-      setRemoteStreams(prevStreams => [...prevStreams, stream])
+      setRemoteStreams(prevStreams => {
+        const socketStreams = prevStreams[id] || []
+        return { ...prevStreams, [id]: [...socketStreams, stream] }
+      })
     })
+
+    peer.on('close', () => {
+      delete peers[id]
+      setRemoteStreams(prevStreams => {
+        delete prevStreams[id]
+        return Object.assign({}, prevStreams)
+       }
+      )
+    })
+
     peers[id] = peer
   }
 
@@ -68,7 +83,8 @@ function App() {
     </header>
     <main className='App'>
       { streams && streams.map(stream => <Video key={stream.id} stream={stream}/>) }
-      { remoteStreams && remoteStreams.map(stream => <Video key={stream.id} stream={stream}/>) }
+      { Object.values(remoteStreams).map(streams => 
+          streams.map(stream => <Video key={stream.id} stream={stream}/>)) }
     </main>
   </Fragment>
 }
