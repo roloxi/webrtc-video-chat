@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  backend:
+    build: ./backend
+    ports:
+    - "8000:8000"
+    - "8080:8080"
+    volumes:
+    - ./backend:/usr/src/backend
+    - /usr/src/backend/node_modules
+  frontend:
+    stdin_open: true
+    build: ./frontend
+    ports:
+    - "3000:3000"
+    volumes:
+    - ./frontend:/usr/src/frontend
+    - /usr/src/frontend/node_modules
+    links:
+    - backend
