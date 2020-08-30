@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, Fragment } from 'react'
 import io from 'socket.io-client'
 import Peer from 'simple-peer'
+import './App.css'
 
 const socket = io('http://localhost:8000')
 
@@ -36,6 +37,12 @@ function App() {
     setStreams(prevStreams => [...prevStreams, stream])
     Object.values(peers).forEach(peer => peer.addStream(stream))
   }
+
+  async function activateScreenshare() {
+    const stream = await navigator.mediaDevices.getDisplayMedia()
+    setStreams(prevStreams => [...prevStreams, stream])
+    Object.values(peers).forEach(peer => peer.addStream(stream))
+  }
   
   // component mount effect
   useEffect(() => {
@@ -55,10 +62,15 @@ function App() {
   }, [])
 
   // render
-  return <div className="App">
-    { streams && streams.map(stream => <Video key={stream.id} stream={stream}/>) }
-    { remoteStreams && remoteStreams.map(stream => <Video key={stream.id} stream={stream}/>) }
-  </div>
+  return <Fragment>
+    <header>
+      <button onClick={ activateScreenshare }>Activate screen share</button>
+    </header>
+    <main className='App'>
+      { streams && streams.map(stream => <Video key={stream.id} stream={stream}/>) }
+      { remoteStreams && remoteStreams.map(stream => <Video key={stream.id} stream={stream}/>) }
+    </main>
+  </Fragment>
 }
 
 
